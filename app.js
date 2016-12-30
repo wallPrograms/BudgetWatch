@@ -73,6 +73,27 @@ var budgetController = (function() {
             return newItem;
         },
         
+        //Part 2
+        deleteItem: function(type, id) {
+            var ids, index;
+            
+            //map returns a brand new array with the same length as the allItems[type] array
+            //id = 6
+            //ids = [1 2 4 6 8] map will return the same array
+            //index = 3
+            ids = data.allItems[type].map(function(current) { 
+                return current.id;
+            });
+            
+            //get the index
+            index = ids.indexOf(id);
+            
+            if (index !== -1) {
+                //delete element using splice
+                data.allItems[type].splice(index, 1); //start deleting at index number, and how many elements
+            }
+        },
+        
         calculateBudget: function() {
             // Calculate total income and expense
             calculateTotal('expense');
@@ -129,7 +150,8 @@ var UIController = (function() {
         budgetLabel: '.budget__value',
         incomeLabel: '.budget__income--value',
         expensesLabel: '.budget__expenses--value',
-        percentageLabel:'.budget__expenses--percentage' 
+        percentageLabel:'.budget__expenses--percentage',
+        container: '.container'
     };
         
     //will return public methods by reading the data from the UI using the HTML
@@ -230,6 +252,10 @@ var controller = (function(budgetCtrl, UICtrl) {
                 ctrlAddItem();
             }
         });
+        
+        //Part 2
+        //Event delegation - income and expense have container in common on the html
+        document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem); 
     };
     
     //Function to update the budget
@@ -265,6 +291,32 @@ var controller = (function(budgetCtrl, UICtrl) {
 
             //5. Calculate and update the budget
             updateBudget(); //from the updateBudget() function
+        }
+    };
+    
+    //Part 2
+    var ctrlDeleteItem = function(event) { // pass in the event to know what the target element is
+        var itemID, splitID, type, ID;
+        
+        /*
+        console.log(event.target.parentNode.parentNode.parentNode.parentNode.id); //parentNode to move up 4 times in the DOM since we want to delete everything (click on the x button to check)
+        */
+        itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
+        
+        if (itemID) {
+            splitID = itemID.split('-'); //split at -
+            type = splitID[0];
+            ID = parseInt(splitID[1]);
+            
+            // 1. Delete the item from the data structure
+            budgetCtrl.deleteItem(type, ID);
+            
+            // 2. Delete the item from the UI
+            
+            
+            // 3. Update and show the new budget
+            
+            
         }
     };
     
