@@ -192,11 +192,44 @@ var UIController = (function() {
         expensesLabel: '.budget__expenses--value',
         percentageLabel:'.budget__expenses--percentage',
         container: '.container',
-        expensesPercentageLabel: '.item__percentage'
+        expensesPercentageLabel: '.item__percentage',
+        dateLabel: '.budget__title--month'
     };
         
+    var formatNumber = function(num, type) {
+        var numSplit, int, dec, type;
+
+        /*
+        + or - before the number
+        exactly 2 decimal points
+        comma separating the thousands
+
+        2310.4567 -> + 2,310.46
+        2000 -> + 2,000.00
+        */
+
+        num = Math.abs(num);
+        num = num.toFixed(2);
+
+        numSplit = num.split('.');
+
+        int = numSplit[0];
+
+        if (int.length > 3) {
+            int = int.substr(0, int.length - 3) + ',' + int.substr(int.length - 3, 3); //int.substr(0, 1) start at 0 and read 1 element
+        }
+
+        dec = numSplit[1];
+
+        //type === 'expense' ? sign = '-' : sign = '+';
+        //return type + ' ' + int + dec;
+
+        return (type === 'expense' ? '-' : '+') + ' ' + int + '.' + dec; //the ( ) executes it first
+    };
+    
     //will return public methods by reading the data from the UI using the HTML
     return {
+        //Get the values from the input on the UI
         getInput: function() {
             return {
                 type: document.querySelector(DOMStrings.inputType).value, //Will be either income or expense
@@ -205,6 +238,7 @@ var UIController = (function() {
             };
         },
         
+        //Add the input on the UI
         addListItem: function(obj, type) {
             var html, newHtml, element;
             
@@ -222,7 +256,7 @@ var UIController = (function() {
             //Replace the placeholder text with the data we receive from the object
             newHtml = html.replace('%id%', obj.id);
             newHtml = newHtml.replace('%description%', obj.description);
-            newHtml = newHtml.replace('%value%', obj.value);
+            newHtml = newHtml.replace('%value%', formatNumber(obj.value, type));
                 
             //Insert the HTML into the DOM
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml); //beforeend adds it as the last element in the list before <p> for example, it is part of the list in the html
@@ -260,9 +294,11 @@ var UIController = (function() {
         },
         
         displayBudget: function(obj) {
-            document.querySelector(DOMStrings.budgetLabel).textContent = obj.budget;
-            document.querySelector(DOMStrings.incomeLabel).textContent = obj.totalIncome;
-            document.querySelector(DOMStrings.expensesLabel).textContent = obj.totalExpenses;
+            obj.budget > 0 ? type = 'income' : type = 'expense';
+            
+            document.querySelector(DOMStrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+            document.querySelector(DOMStrings.incomeLabel).textContent = formatNumber(obj.totalIncome, 'income');
+            document.querySelector(DOMStrings.expensesLabel).textContent = formatNumber(obj.totalExpenses, 'expense');
             
             if (obj.percentage > 0) {
             document.querySelector(DOMStrings.percentageLabel).textContent = obj.percentage + '%';
@@ -291,6 +327,19 @@ var UIController = (function() {
                 }
             });
             
+        },
+        
+        displayMonth: function() {
+            var now, months, month, year;
+            
+            now = new Date();
+            //var chrismas = new Date(2016, 11, 25);
+            
+            months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            month = now.getMonth();
+            
+            year = now.getFullYear();
+            document.querySelector(DOMStrings.dateLabel).textContent = months[month] + ' ' + year;
         },
         
         getDOMStrings: function() {
@@ -411,6 +460,7 @@ var controller = (function(budgetCtrl, UICtrl) {
     return {
         init: function() {
             console.log('Application has started.');
+            UICtrl.displayMonth();
             UICtrl.displayBudget({
                 budget: 0,
                 totalIncome: 0,
