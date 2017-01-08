@@ -227,6 +227,12 @@ var UIController = (function() {
         return (type === 'expense' ? '-' : '+') + ' ' + int + '.' + dec; //the ( ) executes it first
     };
     
+    var nodeListForEach = function(list, callback) {
+        for (i=0; i<list.length; i++) {
+            callback(list[i], i);
+        };
+    };
+    
     //will return public methods by reading the data from the UI using the HTML
     return {
         //Get the values from the input on the UI
@@ -312,12 +318,6 @@ var UIController = (function() {
             var fields = document.querySelectorAll(DOMStrings.expensesPercentageLabel); //returns a node list
             //it is called node because each of the DOM tree elements is called a node
             //loop over the nodes and changes the text property for all of them
-            
-            var nodeListForEach = function(list, callback) {
-                for (i=0; i<list.length; i++) {
-                    callback(list[i], i);
-                };
-            };
                 
             nodeListForEach(fields, function(current, index) {
                 if (percentages[i] > 0) {
@@ -340,6 +340,20 @@ var UIController = (function() {
             
             year = now.getFullYear();
             document.querySelector(DOMStrings.dateLabel).textContent = months[month] + ' ' + year;
+        },
+        
+        changedType: function() {
+            var fields = document.querySelectorAll(
+                DOMStrings.inputType + ',' +
+                DOMStrings.inputDescription + ',' +
+                DOMStrings.inputValue
+            );
+            
+            nodeListForEach(fields, function(current) {
+                current.classList.toggle('red-focus');
+            });
+            
+            document.querySelector(DOMStrings.inputBtn).classList.toggle('red');
         },
         
         getDOMStrings: function() {
@@ -374,7 +388,9 @@ var controller = (function(budgetCtrl, UICtrl) {
         
         //Part 2
         //Event delegation - income and expense have container in common on the html
-        document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem); 
+        document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+        
+        document.querySelector(DOM.inputType).addEventListener('change', UICtrl.changedType);
     };
     
     //Function to update the budget
